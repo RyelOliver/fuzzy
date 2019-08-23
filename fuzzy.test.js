@@ -18,6 +18,11 @@ const Fuzzy = {
                 return this;
             },
             in: function (string) {
+                if (options.caseSensitivity) {
+                    searchString = searchString.toLowerCase();
+                    string = string.toLowerCase();
+                }
+
                 if (string.indexOf(searchString) < 0)
                     return undefined;
 
@@ -36,6 +41,7 @@ describe('Find', () => {
         it('Should return the start and end index', () => {
             const searchString = 'ipsum';
             const string = 'lorem ipsum dolor';
+
             [
                 find(searchString).in(string),
                 find(searchString).exactly.in(string),
@@ -56,36 +62,44 @@ describe('Find', () => {
         });
     });
 
-    describe.skip('Give or take', () => {
+    describe('Give or take', () => {
         it('Should find the string give or take the case', () => {
-            const actual = find('foo').giveOrTake({
+            const searchString = 'ipsum';
+            const string = 'lorem ipSum dolor';
+
+            const success = find(searchString).giveOrTake({
+                caseSensitivity: true,
+            }).in(string);
+            expect(success).toEqual([ 6, 11 ]);
+
+            const error = find(searchString).giveOrTake({
                 caseSensitivity: false,
-            }).in('bar');
-            expect(actual).toEqual([ 0, 0 ]);
+            }).in(string);
+            expect(error).toBeUndefined();
         });
 
-        it('Should find the string give or take white space', () => {
+        it.skip('Should find the string give or take white space', () => {
             const actual = find('foo').giveOrTake({
                 whiteSpace: false,
             }).in('bar');
             expect(actual).toEqual([ 0, 0 ]);
         });
 
-        it('Should find the string give or take the leading white space', () => {
+        it.skip('Should find the string give or take the leading white space', () => {
             const actual = find('foo').giveOrTake({
                 leadingWhiteSpace: false,
             }).in('bar');
             expect(actual).toEqual([ 0, 0 ]);
         });
 
-        it('Should find the string give or take the trailing white space', () => {
+        it.skip('Should find the string give or take the trailing white space', () => {
             const actual = find('foo').giveOrTake({
                 trailingWhiteSpace: false,
             }).in('bar');
             expect(actual).toEqual([ 0, 0 ]);
         });
 
-        it('Should find the string give or take some characters', () => {
+        it.skip('Should find the string give or take some characters', () => {
             const actual = find('foo').giveOrTake({
                 characters: 0,
             }).in('bar');
