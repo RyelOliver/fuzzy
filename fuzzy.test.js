@@ -23,12 +23,76 @@ const Fuzzy = {
                     string = string.toLowerCase();
                 }
 
-                if (string.indexOf(searchString) < 0)
-                    return undefined;
+                const notFuzzy = Object.entries(options)
+                    .every(([ key, value ]) => {
+                        if (key === 'caseSensitivity')
+                            return true;
 
-                const start = string.indexOf(searchString);
-                const end = start + searchString.length;
-                return [ start, end ];
+                        return value === defaultOptions[key];
+                    });
+
+                if (notFuzzy) {
+                    if (string.indexOf(searchString) < 0)
+                        return undefined;
+
+                    const start = string.indexOf(searchString);
+                    const end = start + searchString.length;
+                    return [ start, end ];
+                }
+
+                function testString (start) {
+                    let searchCharacterIndex = 0;
+                    let stringCharacterIndex = start;
+
+                    function remainingSearchStringCharacters () {
+                        return searchString.length - (searchCharacterIndex + 1);
+                    }
+
+                    function remainingStringCharacters () {
+                        return string.length - (stringCharacterIndex + 1);
+                    }
+
+                    while (remainingSearchStringCharacters() && remainingStringCharacters()) {
+                        const searchCharacter = searchString[searchCharacterIndex];
+                        const stringCharacter = string[stringCharacterIndex];
+
+                        if (stringCharacterIndex === start && searchCharacter !== stringCharacter)
+                            return undefined;
+
+                        if (searchCharacter.match(/\s/)) {
+                            searchCharacterIndex++;
+                            continue;
+                        }
+
+                        if (stringCharacter.match(/\s/)) {
+                            stringCharacterIndex++;
+                            continue;
+                        }
+
+                        if (searchCharacter !== stringCharacter)
+                            return undefined;
+
+                        searchCharacterIndex++;
+                        stringCharacterIndex++;
+                    }
+
+                    if (remainingSearchStringCharacters())
+                        return undefined;
+
+                    return stringCharacterIndex;
+                }
+
+                let start = 0;
+                let end;
+
+                while (string.length - start > 0) {
+                    end = testString(start);
+                    if (end)
+                        return [ start, end ];
+                    start++;
+                }
+
+                return undefined;
             },
         };
     },
@@ -78,11 +142,35 @@ describe('Find', () => {
             expect(error).toBeUndefined();
         });
 
-        it.skip('Should find the string give or take white space', () => {
-            const actual = find('foo').giveOrTake({
-                whiteSpace: false,
-            }).in('bar');
-            expect(actual).toEqual([ 0, 0 ]);
+        it('Should find the string give or take white space', () => {
+            [
+                {
+                    searchString: 'ipsum dolor',
+                    string: 'lorem ipsumdolor sit',
+                    expected: [ 6, 15 ],
+                },
+                {
+                    searchString: 'ipsumdolor',
+                    string: 'lorem ipsum dolor sit',
+                    expected: [ 6, 16 ],
+                },
+                {
+                    searchString: 'ipsum   dolor',
+                    string: 'lorem ipsum dolor sit',
+                    expected: [ 6, 16 ],
+                },
+            ]
+                .forEach(({ searchString, string, expected }) => {
+                    const success = find(searchString).giveOrTake({
+                        whiteSpace: true,
+                    }).in(string);
+                    expect(success).toEqual(expected);
+
+                    const error = find(searchString).giveOrTake({
+                        whiteSpace: false,
+                    }).in(string);
+                    expect(error).toBeUndefined();
+                });
         });
 
         it.skip('Should find the string give or take the leading white space', () => {
