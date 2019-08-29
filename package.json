@@ -1,15 +1,19 @@
 {
-  "name": "template",
+  "name": "fuzzy",
   "version": "1.0.0",
-  "description": "Description of package.",
-  "main": "index.js",
+  "description": "Find a search string in a string.",
+  "main": "fuzzy.js",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
   "keywords": [
-    "javascript"
+    "javascript",
+    "fuzzy",
+    "find",
+    "search",
+    "string"
   ],
   "author": "Ryel Oliver <rmuchunku@gmail.com> (https://github.com/RyelOliver)",
   "license": "ISC",
