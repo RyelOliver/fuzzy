@@ -147,23 +147,41 @@ function indexOf ({ value, string, options }) {
     return undefined;
 }
 
+function search ({ value, string, options = DEFAULT_OPTIONS }) {
+    function execute () {
+        return indexOf({ value, string, options });
+    }
+
+    return {
+        find: function (newValue) {
+            value = newValue;
+            return string ? execute() : this;
+        },
+        within: function (newString) {
+            string = newString;
+            return value ? execute() : this;
+        },
+        get exactly () {
+            options = DEFAULT_OPTIONS;
+            return this;
+        },
+        giveOrTake: function (roughly) {
+            options = { ...options, ...roughly };
+            return this;
+        },
+    };
+}
+
 const Fuzzy = {
     indexOf,
     find: function (value) {
-        let options = DEFAULT_OPTIONS;
-        return {
-            get exactly () {
-                options = DEFAULT_OPTIONS;
-                return this;
-            },
-            giveOrTake: function (roughly) {
-                options = { ...options, ...roughly };
-                return this;
-            },
-            in: function (string) {
-                return indexOf({ value, string, options });
-            },
-        };
+        return search({ value });
+    },
+    within: function (string) {
+        return search({ string });
+    },
+    giveOrTake: function (options) {
+        return search({ options });
     },
 };
 
